@@ -7,9 +7,16 @@ Requires = docker.service
 User = root
 Group = root
 Type = oneshot
-ExecStartPre = /usr/bin/docker run -id -p 3306:3306 --rm --mount source=sqlconf,destination=/etc/mysql --mount source=sqldata,destination=/var/lib/mysql --name sqlserver mariadb:%i
-ExecStart = /usr/bin/docker exec -i sqlserver service mysql start
-ExecStop = /usr/bin/docker stop sqlserver
+ExecStartPre = /usr/bin/docker run \
+	-id \
+	-p 3306:3306 \
+	--rm \
+	--mount source=sqlconf,destination=/etc/mysql \
+	--mount source=sqldata,destination=/var/lib/mysql \
+	--name mariadb \
+	mariadb:%i
+ExecStart = /usr/bin/docker exec -i mariadb service mysql start
+ExecStop = /usr/bin/docker stop mariadb
 RemainAfterExit = yes
 
 [Install]

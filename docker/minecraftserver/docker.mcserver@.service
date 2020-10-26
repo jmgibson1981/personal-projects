@@ -8,7 +8,15 @@ User = root
 Group = root
 Type = oneshot
 EnvironmentFile = /var/lib/docker/volumes/minecraftdata/_data/ENVFOLDER/%i
-ExecStartPre = /usr/bin/docker run -id -h %i -p ${MAINPORT}:25565 -p ${RCONPORT}:25575 --rm --mount source=minecraftdata,destination=/var/lib/minecraft --name %i mcserver
+ExecStartPre = /usr/bin/docker run \
+	-id \
+	-h %i \
+	-p ${MAINPORT}:25565 \
+	-p ${RCONPORT}:25575 \
+	--rm \
+	--mount source=minecraftdata,destination=/var/lib/minecraft \
+	--name %i \
+	mcserver
 ExecStart = /usr/bin/docker exec -i %i service minecraft start
 ExecStop = /usr/bin/docker exec -i %i service minecraft stop
 ExecStop = /usr/bin/docker stop %i
