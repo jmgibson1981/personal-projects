@@ -9,6 +9,8 @@ LABEL maintainer="Tadaen Sylvermane <jmgibson81@gmail.com>"
 # make sure to adjust the systemd service file to not try to start the cron
 # process
 
+# rsync is also optional. depends on if you want ramdisk capability
+
 RUN apt update && \
 		apt full-upgrade -y && \
 		apt install -y \
@@ -16,10 +18,10 @@ RUN apt update && \
 		openjdk-14-jre-headless \
 		screen \
 		wget \
+		rsync \
 		cron && \
 		apt clean && \
-		rm -r /var/lib/apt/lists/* && \
-		chmod 755 /etc/init.d/minecraft
+		rm -r /var/lib/apt/lists/*
 		
 # get current minecraft server jar file #
 
@@ -32,8 +34,9 @@ RUN wget -O - https://www.minecraft.net/en-us/download/server \
 
 # insert config files and modify permissions as needed #
 
-ADD configs/minecraft /etc/init.d/
-ADD configs/rootcrontab /var/spool/cron/crontabs/root
-RUN chmod 600 /var/spool/cron/crontabs/root && \
-		chown root:crontab /var/spool/cron/crontabs/root && \
-		chmod 755 /etc/init.d/minecraft
+
+COPY minecraft /etc/init.d/minecraft
+COPY root /var/spool/cron/crontabs/root
+RUN chmod 600 /var/spool/cron/crontabs/root \
+	&& chown root:crontab /var/spool/cron/crontabs/root \
+	&& chmod 755 /etc/init.d/minecraft

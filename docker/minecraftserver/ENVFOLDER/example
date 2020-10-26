@@ -14,3 +14,5 @@ MAINPORT=50001
 DIFFICULTY=easy
 # number only limited by your hardware #
 PLAYERS=10
+# world name #
+WORLDNAME=example
