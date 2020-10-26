@@ -1,10 +1,9 @@
 #!/bin/sh
 # /etc/init.d/minecraft
-# version 1.0
+# version 1.1
+
 # sourced and modified from
 # https://minecraft.gamepedia.com/Tutorials/Server_startup_script#Init.d_Script
-
-# not sure i need this part
 
 ### BEGIN INIT INFO
 # Provides:   minecraft
@@ -18,17 +17,26 @@
 # Description:    Starts the minecraft server
 ### END INIT INFO
 
+# as this is a docker container init script i saw no reason to not run the
+# worlds as root
+
 #Settings
 WORLDS="/var/lib/minecraft"
 CURRENT="$(uname -n)"
 NOW="$(date +%Y.%m.%d.%H.%M)"
-BACKUPDIR="/var/lib/minecraftbackups"
+BACKUPDIR="/var/lib/minecraft/BACKUPS"
 JARFILE="/root/server.jar"
 JAVAOPTS="nogui"
 
 mc_start_cmd() {
 	screen -dmS "$CURRENT" java -jar "$JARFILE" "$JAVAOPTS"
 }
+
+# this function in particular determines what type of server you run. it sources
+# from an environment folder that exists in the /var/lib/minecraft/ENVFOLDER.
+# this folder should be accessible on the host as well, in my case the hosts
+# docker volume that contains the worlds. the systemd service on the host pulls 
+# from this same file when starting the container for setting necessary ports.
 
 mc_server_customize() {
 	if [ ! -f "$WORLDS"/"$CURRENT"/server.properties ] ; then
@@ -41,38 +49,52 @@ mc_server_customize() {
 		sed -i "s/difficulty=easy/difficulty=${DIFFICULTY}/g" "$SERVFILE"
 		# players
 		sed -i "s/max-players=20/max-players=${PLAYERS}/g" "$SERVFILE"
+		# eula setting
 		echo "eula=true" > "$WORLDS"/"$CURRENT"/eula.txt
 	fi
 }
 
 mc_server_start() {
+	# checks screen to make sure world not running
 	if ! screen -ls | grep "$CURRENT" ; then
+		# makes world directory if needed
 		[ -d "$WORLDS"/"$CURRENT" ] || mkdir -p "$WORLDS"/"$CURRENT"
+		# runs function to customize world. only runs if new world
 		mc_server_customize
+		# start world
 		cd "$WORLDS"/"$CURRENT" && mc_start_cmd
 	fi
 }
 
 mc_screen_cmd_func() {
+	# the original init script i sourced from had this same screen command many 
+	# times. made more sense to make it a function to me
 	screen -p 0 -S "$CURRENT" -X eval "stuff \"${1}\"\015"
 }
 
 mc_backup_func() {
+	# forces a write to the disk and makes world read only temporarily.
 	mc_screen_cmd_func "save-off"
 	mc_screen_cmd_func "save-all"
 	sync
 	sleep 10
+	# this is set to backup to a tar.gz file at 0300 and 1500 respectively. every
+	# 12 hours. can make more often as needed by modifying case call
 	case "$(date +%H%M)" in
 			0300|1500)
 				mc_screen_cmd_func "say backing up"
+				[ -d "$BACKUPDIR" ] || mkdir -p "$BACKUPDIR"
 				tar -czf "$BACKUPDIR"/"$CURRENT"."$NOW".tar.gz "$WORLDS"/"$CURRENT"/*
+				# removes any backups older than 3 days
 				find "$BACKUPDIR"/ -type f -mtime +3 -exec rm {} \;
 			;;
 	esac
+	# re-enables world saving
 	mc_screen_cmd_func "save-on"
 }
 
 mc_world_stop() {
+	# 15 second timer with in-game notifications of imminent world shutdown
 	for seconds in 15 10 5 ; do
 		mc_screen_cmd_func "say stopping in ${seconds}"
 		sleep 5
@@ -81,6 +103,7 @@ mc_world_stop() {
 }
 
 mc_world_status() {
+	# basic test to check if running or not
 	if screen -ls | grep "$CURRENT" > /dev/null ; then
 		echo "${CURRENT} is running"
 	else
@@ -112,4 +135,5 @@ case "$1" in
 		exit 1
 		;;
 esac
+
 exit 0

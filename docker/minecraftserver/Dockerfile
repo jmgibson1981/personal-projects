@@ -2,11 +2,12 @@
 FROM ubuntu:latest
 LABEL maintainer="Tadaen Sylvermane <jmgibson81@gmail.com>"
 
-# add init service #
-
-ADD minecraft /etc/init.d/
-
 # install & cleanup #
+
+# cron is optional. in my case i insert a root crontab to backup the world
+# every hour. if you choose to not install cron and backup another way then 
+# make sure to adjust the systemd service file to not try to start the cron
+# process
 
 RUN apt update && \
 		apt full-upgrade -y && \
@@ -20,7 +21,7 @@ RUN apt update && \
 		rm -r /var/lib/apt/lists/* && \
 		chmod 755 /etc/init.d/minecraft
 		
-# get current minecraft server jar file & configure #
+# get current minecraft server jar file #
 
 RUN wget -O - https://www.minecraft.net/en-us/download/server \
 		> /tmp/mcserver && \
@@ -29,6 +30,10 @@ RUN wget -O - https://www.minecraft.net/en-us/download/server \
 		wget -O /root/server.jar "$info" && break ; done < /tmp/mcservertype && \
 		rm /tmp/mcserver /tmp/mcservertype
 
-ADD rootcrontab /var/spool/cron/crontabs/root
+# insert config files and modify permissions as needed #
+
+ADD configs/minecraft /etc/init.d/
+ADD configs/rootcrontab /var/spool/cron/crontabs/root
 RUN chmod 600 /var/spool/cron/crontabs/root && \
-		chown root:crontab /var/spool/cron/crontabs/root
+		chown root:crontab /var/spool/cron/crontabs/root && \
+		chmod 755 /etc/init.d/minecraft
