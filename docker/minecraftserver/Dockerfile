@@ -5,7 +5,7 @@ LABEL maintainer="Tadaen Sylvermane <jmgibson81@gmail.com>"
 # install & cleanup #
 
 # cron is optional. in my case i insert a root crontab to backup the world
-# every hour. if you choose to not install cron and backup another way then 
+# regularly. if you choose to not install cron and backup another way then 
 # make sure to adjust the systemd service file to not try to start the cron
 # process
 
