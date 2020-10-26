@@ -11,7 +11,6 @@ ExecStartPre = /usr/bin/docker run \
 	-id \
 	-p 3306:3306 \
 	--rm \
-	--mount source=sqlconf,destination=/etc/mysql \
 	--mount source=sqldata,destination=/var/lib/mysql \
 	--name mariadb \
 	mariadb:%i
