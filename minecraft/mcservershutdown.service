@@ -1,0 +1,12 @@
+[Unit]
+Description = Stops all minecraft servers properly @ shutdown
+
+[Service]
+User = mcserver
+Group = mcserver
+Type = oneshot
+RemainAfterExit = true
+ExecStop = /usr/local/bin/mcserverglobalstop
+
+[Install]
+WantedBy = multi-user.target

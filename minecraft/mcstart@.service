@@ -1,0 +1,14 @@
+[Unit]
+Description = Starts Servers
+After = network.target mcramdisk@.service
+
+[Service]
+WorkingDirectory = /ramdisk/%i
+Type = forking
+User = mcserver
+Group = mcserver
+ExecStart = /usr/bin/screen -dmS %i /usr/bin/java -jar /home/mcserver/server.jar nogui
+ExecStop = /usr/local/bin/mcscript.bash %i stop
+
+[Install]
+WantedBy = multi-user.target

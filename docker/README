@@ -1,0 +1,2 @@
+These Dockerfiles are no frills basic from the repositories. 
+Mythtv is a bit heavy due to the need for a vnc server for configuration.

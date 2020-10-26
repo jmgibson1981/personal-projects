@@ -1,0 +1,9 @@
+[Unit]
+Description = Timer For Minecraft Server Backups
+Requires = mcbackup@%i.service
+
+[Timer]
+OnCalendar = *:0/15
+
+[Install]
+WantedBy = timers.target

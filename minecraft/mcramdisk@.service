@@ -1,0 +1,16 @@
+[Unit]
+Description = Loads & Unloads Ramdisk
+After = network.target
+
+[Service]
+WorkingDirectory = /home/mcserver/
+Type = oneshot
+User = mcserver
+Group = mcserver
+ExecStart = /usr/bin/rsync -auv --progress gameworlds/%i /ramdisk/
+ExecStop = /usr/bin/rsync -auv --progress /ramdisk/%i gameworlds/
+ExecStop = /bin/rm -r /ramdisk/%i
+RemainAfterExit = yes
+
+[Install]
+WantedBy = multi-user.target

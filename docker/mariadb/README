@@ -1,0 +1,9 @@
+Execution:
+docker run -id -p 3306:3306 --rm --mount source=sqlconf,destination=/etc/mysql --mount source=sqldata,destination=/var/lib/mysql --name sqlserver mariadb:v1
+
+Backup:
+docker exec -i sqlserver mysqldump --user=backup --password=backup --single-transaction --all-databases | gzip > /BACKUPPATH/mydatabases.$(date +%Y.%m.%d.%H.%M).sql.gz
+
+Restore | Fresh Load:
+zcat $(find /BACKUPPATH/ -type f | tail -n 1) | docker exec -i sqlserver mysql
+

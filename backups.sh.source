@@ -1,0 +1,62 @@
+#!/bin/sh
+# tadaen sylvermane | jason gibson
+# various backup functions
+
+# begin source #
+
+desktop_home_dir_func() {
+	TARGET=/snapraid/pool/backups/homebackups
+	if [ "$USER" = root ] ; then
+		HOSTNAME=$(uname -n)
+		for user in /home/* ; do
+			BUSER=$(basename "$user")
+			if [ ! -d "$TARGET"/"$HOSTNAME"/"$BUSER}" ] ; then
+				mkdir -p "$TARGET"/"$HOSTNAME"/"$BUSER" && chown -R "$BUSER":"$BUSER" \
+				"$TARGET"/"$HOSTNAME"/"$BUSER"
+			fi
+			su -c "duplicity \
+			--exclude-if-present .nobackup \
+			--no-encryption \
+			--full-if-older-than 1M \
+			/home/${BUSER} file://${TARGET}/${HOSTNAME}/${BUSER}" "$BUSER"
+			su -c \
+			"duplicity remove-all-but-n-full 4 --force \
+			file://${TARGET}/${HOSTNAME}/${BUSER}" "$BUSER"
+		done
+	else
+		lsblk | head -n 2 | grep ltsp && HOSTNAME=server || HOSTNAME=$(uname -n)
+		RESTFOLDER=/home/"$USER"/Desktop/RESTORE_DELETE_ASAP
+		duplicity \
+		--no-encryption \
+		--progress \
+		file://"$TARGET"/"$HOSTNAME"/"$USER"/ "$RESTFOLDER"
+		touch "$RESTFOLDER"/.nobackup
+	fi
+}
+
+win_global_backup_func() { # still working on this
+	for windir in "$@:2" ; do
+		if [ -d "$WINMOUNT"/"$1"/"$windir" ] ; then
+			if [ ! -d "$WINBACK"/global/"$windir" ] ; then
+				mkdir -p "$WINBACK"/global/"$windir"
+			fi
+			rsync -auv "$WINMOUNT"/"$1"/"$windir"/* "$WINBACK"/global/"$windir"/
+		fi
+	done
+}
+
+sql_backup_func() {
+	SQLBACKDIR="$POOLLOC"/backups/mysqldump
+	if [ "$USER" = root ] ; then
+		zcat "$(find "$SQLBACKDIR"/ -type f | tail -n 1)" | mysql
+	else
+		mysqldump \
+		--user=backup \
+		--password=backup \
+		--single-transaction \
+		--all-databases > "$SQLBACKDIR"/mydatabases."$NOW".sql
+		find "$SQLBACKDIR"/ -type f -mtime +5 -exec rm {} \;
+	fi
+}
+
+# end source #

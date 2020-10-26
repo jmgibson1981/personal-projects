@@ -1,0 +1,12 @@
+[Unit]
+Description = Minecraft Server Backups
+After = mcstart@.service
+
+[Service]
+Type = oneshot
+User = mcserver
+Group = mcserver
+ExecStart = /usr/local/bin/mcscript.bash %i
+
+[Install]
+Also = mcbackup@.timer
