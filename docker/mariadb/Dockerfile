@@ -16,10 +16,4 @@ RUN apt update && \
 
 ADD 99-kodi-optimize.cnf /etc/mysql/mariadb.conf.d/
 
-# set permissions of wrapper script #
-
-RUN chmod 755 /usr/local/bin/wrapper.sh
-
-
-
 
