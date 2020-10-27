@@ -15,7 +15,6 @@ ExecStartPre = /usr/bin/docker run \
 	-id \
 	-h %i \
 	-p ${MAINPORT}:25565 \
-	-p ${RCONPORT}:25575 \
 	--rm \
 	--mount source=minecraftdata,destination=/var/lib/minecraft \
 	--name %i \
