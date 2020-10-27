@@ -1,0 +1,91 @@
+# squid docker from repositories with ssl bump #
+# minimum required to be able to run and configure #
+FROM ubuntu:latest
+LABEL maintainer="Tadaen Sylvermane <jmgibson81@gmail.com>"
+
+ENV DEBIAN_FRONTEND=noninteractive
+ENV BUILDPACKAGES="dpkg-dev build-essential packaging-dev equivs lintian \
+		fakeroot devscripts gawk gcc-multilib dpatch libssl-dev"
+ENV STAYPACKAGES="openssl apache2 squid-langpack logrotate libdbi-perl ssl-cert"
+
+# added source line for future squid source download. rest of RUN section here
+# needed for tzdata - source
+# https://stackoverflow.com/questions/44331836/apt-get-install-tzdata-noninteractive
+
+RUN echo "deb-src http://archive.ubuntu.com/ubuntu focal main" >> \
+		/etc/apt/sources.list && \
+		apt update && \
+		apt full-upgrade -y && \
+		apt install -y curl && \
+		ln -s /usr/share/zoneinfo/$(curl https://ipapi.co/timezone) /etc/localtime
+
+# https://elatov.github.io/2019/01/using-squid-to-proxy-ssl-sites/
+# https://www.vultr.com/docs/how-to-compile-squid3-on-ubuntu-12-04
+# https://serverfault.com/questions/987363/squid-proxy-using-https
+
+RUN apt install -y ${BUILDPACKAGES} ${STAYPACKAGES} && \
+		apt build-dep -y squid openssl && \
+		cd /root && \
+		apt source squid && \
+		cd squid-[0-9].[0-9][0-9] && \
+		sed -i \
+		's/--with-gnutls/--with-gnutls --enable-ssl --with-cppunit-basedir=\/usr \
+		--enable-ssl-crtd --with-openssl/' debian/rules && \
+		debuild -us -uc -b && \
+		dpkg -i /root/squid*.deb && \
+		apt install -fy && \
+		rm -r /root/* && \
+		apt clean && \
+		# this and the later removal of password is to prevent autoremove from
+		# complaining about removing sudo. eliminates a useless prompt basically.
+		echo "root:root" | chpasswd && \
+		apt --purge autoremove -y ${BUILDPACKAGES} && \
+		passwd -d root && \
+		rm -r /var/lib/apt/lists/*
+		
+COPY squid.conf /etc/squid/
+COPY squid /etc/init.d/squid
+RUN chmod 755 /etc/init.d/squid
+		
+# ssl key gen and positioning #
+
+RUN mkdir -p /etc/squid/ssl && \
+		cd /etc/squid/ssl && \
+		openssl req \
+		-new \
+		-newkey rsa:2048 \
+		-sha256 \
+		-days 1000 \
+		-nodes \
+		-x509 \
+		-extensions v3_ca \
+		-keyout squid-key.pem \
+		-out squid-cert.pem \
+		# C = Country
+		-subj "/C=US/" \
+		# ST = State / Province
+		-subj "/ST=AZ/" \
+		# L = City
+		-subj "/L=TUCSON/" \
+		# O = Organization
+		-subj "/O=HOME/" \
+		# OU = Organization Unit
+		-subj "/OU=NONE/" \
+		# CN = Your name or website name
+		-subj "/CN=TADAEN SYVLERMANE/" \
+		# emailAddress
+		-subj "/emailAddress=jmgibson81@gmail.com/" && \
+		openssl x509 -in squid-cert.pem -outform DER -out squid-cert.der && \
+		cat squid-cert.pem squid-key.pem > /etc/squid/ssl/squid-ca-cert-key.pem
+		# creats the proper CA file for import into ca-certificates & browsers
+		openssl x509 -outform pem -in squid-cert.crt -out /root/squid-CA.crt
+		chown -R proxy:proxy /etc/squid/ssl && \
+		chmod 700 /etc/squid/ssl && \
+		chmod 744 /etc/squid/ssl/*.pem
+
+
+
+
+
+
+

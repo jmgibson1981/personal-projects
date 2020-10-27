@@ -1,0 +1,2 @@
+Only thing should need to do is extract the cert files from the containers /root/ directory.
+Included a diff of a default /etc/init.d/squid and the one in this folder.
