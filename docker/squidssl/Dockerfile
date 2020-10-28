@@ -47,43 +47,6 @@ COPY squid.conf /etc/squid/squid.conf
 COPY squid /etc/init.d/squid
 COPY squidcert.source /root/squidcert.source
 RUN chmod 755 /etc/init.d/squid
-		
-# ssl key gen and positioning #
-
-RUN mkdir -p /etc/squid/certs && \
-		cd /etc/squid/certs && \
-		openssl req \
-		-new \
-		-newkey rsa:2048 \
-		-sha256 \
-		-days 1000 \
-		-nodes \
-		-x509 \
-		-extensions v3_ca \
-		-keyout squid-key.pem \
-		-out squid-cert.pem \
-		# C = Country
-		-subj "/C=US/" \
-		# ST = State / Province
-		-subj "/ST=AZ/" \
-		# L = City
-		-subj "/L=TUCSON/" \
-		# O = Organization
-		-subj "/O=HOME/" \
-		# OU = Organization Unit
-		-subj "/OU=NONE/" \
-		# CN = Your name or website name
-		-subj "/CN=TADAEN SYVLERMANE/" \
-		# emailAddress
-		-subj "/emailAddress=jmgibson81@gmail.com/" && \
-		cat squid-cert.pem squid-key.pem > /etc/squid/ssl/squid-ca-cert-key.pem
-		# creats the proper CA file for import into ca-certificates & browsers
-		openssl x509 -outform pem -in squid-cert.crt -out /root/squid-CA.crt
-		chown -R proxy:proxy /etc/squid/ssl && \
-		chmod 700 /etc/squid/ssl && \
-		chmod 744 /etc/squid/ssl/*.pem
-
-
 
 
 
