@@ -8,6 +8,8 @@ RUN apt update && \
 		apt full-upgrade -y && \
 		apt install -y \
 		--no-install-recommends \
+		rsyslog \
+		nano \
 		mariadb-server && \
 		apt clean && \
 		rm -r /var/lib/apt/lists/*
