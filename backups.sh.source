@@ -54,7 +54,7 @@ sql_backup_func() {
 		--user=backup \
 		--password=backup \
 		--single-transaction \
-		--all-databases > "$SQLBACKDIR"/mydatabases."$NOW".sql
+		--all-databases | gzip > "$SQLBACKDIR"/mydatabases."$NOW".sql.gz
 		find "$SQLBACKDIR"/ -type f -mtime +5 -exec rm {} \;
 	fi
 }
