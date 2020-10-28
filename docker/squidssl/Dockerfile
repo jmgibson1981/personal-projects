@@ -43,14 +43,15 @@ RUN apt install -y ${BUILDPACKAGES} ${STAYPACKAGES} && \
 		passwd -d root && \
 		rm -r /var/lib/apt/lists/*
 		
-COPY squid.conf /etc/squid/
+COPY squid.conf /etc/squid/squid.conf
 COPY squid /etc/init.d/squid
+COPY squidcert.source /root/squidcert.source
 RUN chmod 755 /etc/init.d/squid
 		
 # ssl key gen and positioning #
 
-RUN mkdir -p /etc/squid/ssl && \
-		cd /etc/squid/ssl && \
+RUN mkdir -p /etc/squid/certs && \
+		cd /etc/squid/certs && \
 		openssl req \
 		-new \
 		-newkey rsa:2048 \
@@ -75,7 +76,6 @@ RUN mkdir -p /etc/squid/ssl && \
 		-subj "/CN=TADAEN SYVLERMANE/" \
 		# emailAddress
 		-subj "/emailAddress=jmgibson81@gmail.com/" && \
-		openssl x509 -in squid-cert.pem -outform DER -out squid-cert.der && \
 		cat squid-cert.pem squid-key.pem > /etc/squid/ssl/squid-ca-cert-key.pem
 		# creats the proper CA file for import into ca-certificates & browsers
 		openssl x509 -outform pem -in squid-cert.crt -out /root/squid-CA.crt

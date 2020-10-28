@@ -140,10 +140,8 @@ fi
 
 case "$1" in
     start)
-	if [ ! -d /var/spool/squid/ssl_db ] ; then
-		/usr/lib/squid/security_file_certgen -c -s /var/spool/squid/ssl_db -M 25MB
-		chown -R proxy:proxy /var/spool/squid/ssl_db
-	fi
+	. /root/squidcert.source
+	cert_create_func
 	res=`$DAEMON -k parse -f $CONFIG 2>&1 | grep -o "FATAL: .*"`
 	if test -n "$res";
 	then
