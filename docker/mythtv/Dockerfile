@@ -17,6 +17,7 @@ RUN apt install -y \
 		sudo \
 		x11-apps \
 		xauth \
+		xmltv-util \
 		mythtv-backend && \
 		apt clean && \
 		rm -r /var/lib/apt/lists/*
@@ -25,4 +26,8 @@ RUN apt install -y \
 
 COPY config.xml /etc/mythtv/config.xml
 COPY sshd_config /etc/ssh/sshd_config
-RUN usermod -aG sudo mythtv && chown mythtv:mythtv /etc/mythtv/config.xml && echo "mythtv:mythtv" | chpasswd
+COPY mythtv-backend /etc/init.d/mythtv-backend
+RUN usermod -aG sudo mythtv && \
+	chown mythtv:mythtv /etc/mythtv/config.xml && \
+	echo "mythtv:mythtv" | chpasswd && \
+	chmod 755 /etc/init.d/mythtv-backend

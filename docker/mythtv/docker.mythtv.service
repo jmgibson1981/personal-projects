@@ -10,11 +10,9 @@ Type = oneshot
 ExecStartPre = /usr/bin/docker run \
 	-id \
 	-h mythtv \
-	-p 6543:6543 \
-	-p 6544:6544 \
-	-p 22222:22222 \
+	--network host \
 	--rm \
-	--mount source=mythtvdata,destination=/var/lib/mythtv \
+	--mount source=mythtv,destination=/var/lib/mythtv \
 	--name mythtv \
 	mythtv
 ExecStart = /usr/bin/docker exec -i mythtv service mythtv-backend start

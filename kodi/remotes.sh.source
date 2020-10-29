@@ -12,8 +12,7 @@ remote_stop_func() {
 		if pgrep kodi-x11 ; then
 			kodi-send --action "PlayerControl(stop)"
 			for seconds in 30 20 10 ; do
-				kodi-send --action "Notification(kodi stopping,${STOPCMD} in ${seconds} \
-				seconds)"
+				kodi-send --action "Notification(kodi stopping,${STOPCMD} in ${seconds} seconds)"
 				sleep 10
 			done
 			case "$STOPCMD" in

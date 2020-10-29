@@ -9,12 +9,11 @@ Group = root
 Type = oneshot
 ExecStartPre = /usr/bin/docker run \
 	-id \
-	-p 3306:3306 \
+	--network host \
 	--rm \
-	--mount source=sqldata,destination=/var/lib/mysql \
+	--mount source=sql,destination=/var/lib/mysql \
 	--name mariadb \
 	mariadb
-ExecStart = /usr/bin/docker exec -i mariadb service rsyslog start
 ExecStart = /usr/bin/docker exec -i mariadb service mysql start
 ExecStop = /usr/bin/docker stop mariadb
 RemainAfterExit = yes

@@ -10,7 +10,7 @@ Type = oneshot
 ExecStartPre = /usr/bin/docker run \
         -id \
         -h squid \
-        -p 3128:3128 \
+	--network host \
         --rm \
         --mount source=squidconf,destination=/etc/squid \
         --mount source=squiddata,destination=/var/spool/squid \
