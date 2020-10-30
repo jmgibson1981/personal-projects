@@ -1,0 +1,19 @@
+#!/bin/sh
+# tadaen sylvermane | jason gibson
+# sql backups test
+
+NOW=$(date +%Y.%m.%d.%H.%M)
+BACKUPS=/var/lib/mysqlbackups
+
+for db in $(mysql -e "show databases;") ; do
+				case "$db" in
+                Database|information_schema|mysql|performance_schema)
+                        continue
+                        ;;
+                *)
+                        mysqldump --user=backup --password=backup \
+                        --single-transaction \
+                        "$db" | gzip > "$BACKUPS"/"$db"."$NOW".sql.gz
+                        ;;
+        esac
+done

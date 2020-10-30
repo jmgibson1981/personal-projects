@@ -11,10 +11,12 @@ ExecStartPre = /usr/bin/docker run \
 	-id \
 	--network host \
 	--rm \
+	--mount source=sqlbackup,destination=/var/lib/mysqlbackups \
 	--mount source=sql,destination=/var/lib/mysql \
 	--name mariadb \
 	mariadb
 ExecStart = /usr/bin/docker exec -i mariadb service mysql start
+ExecStart = /usr/bin/docker exec -i mariadb service cron start
 ExecStop = /usr/bin/docker stop mariadb
 RemainAfterExit = yes
 

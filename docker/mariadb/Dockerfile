@@ -18,7 +18,9 @@ RUN apt update && \
 	apt install -y \
 	--no-install-recommends \
 	tzdata \
-	mariadb-server && \
+	mariadb-server \
+	cron \
+	rsync && \
 	apt clean && \
 	rm -r /var/lib/apt/lists/*
 
@@ -26,6 +28,10 @@ RUN apt update && \
 
 COPY 99-kodi-optimize.cnf /etc/mysql/mariadb.conf.d/
 COPY mysql /etc/init.d/mysql
-RUN chmod 755 /etc/init.d/mysql
+COPY sqlbackups /usr/local/bin/
+COPY root /var/spool/cron/crontabs/root
+RUN chmod 755 /etc/init.d/mysql && \
+		chmod 755 /usr/local/bin/sqlbackups && \
+		chmod 600 /var/spool/cron/crontabs/root
 
 

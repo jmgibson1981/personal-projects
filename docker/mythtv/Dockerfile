@@ -30,4 +30,4 @@ COPY mythtv-backend /etc/init.d/mythtv-backend
 RUN usermod -aG sudo mythtv && \
 	chown mythtv:mythtv /etc/mythtv/config.xml && \
 	echo "mythtv:mythtv" | chpasswd && \
-	chmod 755 /etc/init.d/mythtv-backend
+	chmod 755 /etc/init.d/mythtv-backend && \

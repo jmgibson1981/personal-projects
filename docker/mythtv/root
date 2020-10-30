@@ -1,0 +1,5 @@
+PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
+MAILTO=""
+USER=root
+# m h  dom mon dow   command
+47 4 * * 7	/usr/share/doc/mythtv-backend/contrib/maintenance/optimize_mythdb.pl
